@@ -1,6 +1,9 @@
+import usePaginations from "../../../hooks/usePaginations";
 import MyButton from "../button/MyButton";
 
-function Pagination({page, pagesArray, changePage}) {
+function Pagination({page, totalPages, changePage}) {
+	const pagesArray = usePaginations(totalPages);
+
     return (
         <div className="page-pagination">
             {pagesArray.map(numbPage => {

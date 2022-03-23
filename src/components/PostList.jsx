@@ -1,7 +1,7 @@
 import PostItem from "./PostItem";
 import {CSSTransition, TransitionGroup,} from 'react-transition-group';
 
-const PostList = ({title, posts, deletePost}) => {
+const PostList = ({title, posts, openPost, deletePost}) => {
     const visiblePost = posts.map((post, index) => {
 		return (
             <CSSTransition
@@ -11,6 +11,7 @@ const PostList = ({title, posts, deletePost}) => {
             >
                 <PostItem
                     post={post} 
+                    openPost={openPost}
                     deletePost={deletePost}
                 />
             </CSSTransition>
