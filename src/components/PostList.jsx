@@ -1,27 +1,36 @@
 import PostItem from "./PostItem";
+import {CSSTransition, TransitionGroup,} from 'react-transition-group';
 
 const PostList = ({title, posts, deletePost}) => {
     const visiblePost = posts.map((post, index) => {
-		return <PostItem 
-            number={index + 1} 
-            key={post.id} 
-            post={post} 
-            deletePost={deletePost}
-        />
+		return (
+            <CSSTransition
+                key={post.id} 
+                timeout={350}
+                classNames="postItem"
+            >
+                <PostItem
+                    post={post} 
+                    deletePost={deletePost}
+                />
+            </CSSTransition>
+        )
 	});
 
     return (
         <div>
             <h1 style={{textAlign: "center"}}>{title}</h1>
-			{
-                visiblePost.length
-                ? 
-                visiblePost
-                : 
-                <div style={{textAlign: "center", fontSize: 20, fontWeight: 700}}>
-                    Посты не найдены!
-                </div>
-            }
+                {
+                    visiblePost.length
+                    ? 
+                    <TransitionGroup>
+                        {visiblePost}
+                    </TransitionGroup>
+                    : 
+                    <div style={{textAlign: "center", fontSize: 20, fontWeight: 700}}>
+                        Посты не найдены!
+                    </div>
+                }
         </div>
     );
 }

@@ -1,5 +1,5 @@
 import "./styles/App.css"
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import PostList from "./components/PostList";
 import PostForm from "./components/PostForm";
 import MySelect from "./components/UI/select/MySelect";
@@ -7,40 +7,39 @@ import MyInput from "./components/UI/input/MyInput";
 import PostFilter from "./components/PostFilter";
 import MyModal from "./components/UI/MyModal/MyModal";
 import MyButton from "./components/UI/button/MyButton";
+import {usePost} from "./hooks/usePost"
+import PostService from "./API/PostService";
+import MyLoader from "./components/UI/loader/MyLoader";
+import useFetching from "./hooks/useFetching";
+import { getPageCount, getPagesArray } from "./libs/pages";
+import usePaginations from "./hooks/usePaginations";
+import Pagination from "./components/UI/pagination/Pagination";
 
 function App() {
-	const [posts, setPosts] = useState([
-		{id: 1, title: "JS 1", body: "Description"},
-		{id: 2, title: "JS 2", body: "Description"},
-		{id: 3, title: "JS 3", body: "Description"},
-		{id: 4, title: "JS 4", body: "Description"},
-		{id: 5, title: "JS 5", body: "Description"}
-	]);
-
+	const [posts, setPosts] = useState([]);
 	const [filter, setFilter] = useState({sort: "", query: ""});
 	const [modal, setModal] = useState(false);
+	const [totalPages, setTotalPages] = useState(0);
+	const [limit, setLimit] = useState(10);
+	const [page, setPage] = useState(1);
+	const sortedAndSearchedPosts = usePost(posts, filter.sort, filter.query);
+	const pagesArray = usePaginations(totalPages);
+
+	const [fetchPosts, isPostsLoading, postError] = useFetching(async () => {
+		const response = await PostService.getAll(limit, page);
+		setPosts(await response.json());
+		const totalCount = response.headers.get("x-total-count");
+		setTotalPages(getPageCount(totalCount, limit));
+	});
 	
-	const sortedPosts = useMemo(() => {
-		console.log("Отработала функция сортировки");
-		if(filter.sort) {
-			return [...posts].sort((a, b) => a[filter.sort].localeCompare(b[filter.sort]));
-		}
+	useEffect(() => {
+		fetchPosts()
+	}, [page]);
 
-		return posts;
-	}, [filter.sort, posts]);
-
-	const sortedAndSearchedPosts = useMemo(() => {
-		console.log("Отработала функция поиска");
-		
-		if(filter.query) {
-			const regExp = new RegExp(filter.query, "i");
-
-			return sortedPosts.filter(post => regExp.test(post.title));
-		}
-		
-		return sortedPosts;
-	}, [filter.query, sortedPosts]);
-
+	function changePage(page) {
+		setPage(page);
+	}
+	
 	function createPost(e, post) {
 		e.preventDefault();
 
@@ -54,6 +53,7 @@ function App() {
 	
 	return (
 		<div className="App">
+			<MyButton onClick={fetchPosts}>Загрузить посты</MyButton>
 			<MyButton style={{marginTop: 20}} onClick={() => setModal(true)}>
 				Создать пост
 			</MyButton>
@@ -65,11 +65,16 @@ function App() {
 				filter={filter}
 				setFilter={setFilter}
 			/>
-			<PostList 
-				title="Посты про JS" 
-				posts={sortedAndSearchedPosts} 
-				deletePost={deletePost}
-			/>
+			{postError && <h1>{postError}</h1>}
+			{isPostsLoading 
+				? <MyLoader/>
+				: <PostList 
+						title="Посты" 
+						posts={sortedAndSearchedPosts} 
+						deletePost={deletePost}
+					/>
+				 }
+			<Pagination pagesArray={pagesArray} page={page} changePage={changePage}/>
 		</div>
 	);
 }

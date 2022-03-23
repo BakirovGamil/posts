@@ -21,3 +21,31 @@
     justify-content: space-between;
     align-items: center;
 }
+
+
+.postItem-enter {
+  opacity: 0;
+}
+.postItem-enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+.postItem-exit {
+  opacity: 1;
+}
+.postItem-exit-active {
+  opacity: 0;
+  transition: opacity 500ms ease-in;
+}
+
+.page-pagination {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+}
+
+#page-btn_active {
+  background-color: teal;
+  color: white;
+  font-weight: 700;
+}
